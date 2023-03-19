@@ -23,7 +23,7 @@ db_drop_and_create_all(app)
 
 @app.route('/drinks', methods=['GET'])
 def get_drinks():
-    """Handles GET requests for all available drinks."""
+    """Handles GET requests for all available drinks in their short format."""
     try:
         print('Request - [GET] /drinks')
         all_drinks = Drink.query.all()
@@ -33,26 +33,18 @@ def get_drinks():
             'drinks': drinks
         }), 200
     except Exception as e:
-        print('Error - [GET] /drinks')
+        print('Error - [GET] /drinks', e)
+        description = getattr(e, 'message', 'Internal server error')
         code = getattr(e, 'code', 500)
-        abort(code)
+        abort(code, description=description)
     finally:
         db.session.close()
-
-
-'''
-    GET /drinks-detail
-        it should require the 'get:drinks-detail' permission
-        it should contain the drink.long() data representation
-    returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
-        or appropriate status code indicating reason for failure
-'''
 
 
 @requires_auth('get:drinks-detail')
 @app.route('/drinks-detail', methods=['GET'])
 def get_detailed_drinks():
-    """Handles GET requests for all available drinks in detailed form."""
+    """Handles GET requests for all available drinks in their detailed format."""
     try:
         print('Request - [GET] /drinks')
         all_drinks = Drink.query.all()
@@ -62,21 +54,12 @@ def get_detailed_drinks():
             'drinks': drinks
         }), 200
     except Exception as e:
-        print('Error - [GET] /drinks')
+        print('Error - [GET] /drinks', e)
+        description = getattr(e, 'message', 'Internal server error')
         code = getattr(e, 'code', 500)
-        abort(code)
+        abort(code, description=description)
     finally:
         db.session.close()
-
-
-'''
-    POST /drinks
-        it should create a new row in the drinks table
-        it should require the 'post:drinks' permission
-        it should contain the drink.long() data representation
-    returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
-        or appropriate status code indicating reason for failure
-'''
 
 
 @requires_auth('post:drinks')
@@ -86,19 +69,28 @@ def create_drink():
     try:
         print('Request - [POST] /drinks')
         body = request.get_json()
+
         title = body['title']
+        if not title:
+            abort(400, description='Bad request: a drink title is required')
+
         raw_recipe = body['recipe']
+        if not raw_recipe:
+            abort(400, description='Bad request: a drink recipe is required')
         recipe = json.dumps(raw_recipe)
+
         drink = Drink(title=title, recipe=recipe)
         drink.insert()
+
         return jsonify({
             'success': True,
             'drinks': drink.long()
         }), 200
     except Exception as e:
-        print('Error - [POST] /drinks')
+        print('Error - [POST] /drinks', e)
+        description = getattr(e, 'message', 'Internal server error')
         code = getattr(e, 'code', 500)
-        abort(code)
+        abort(code, description=description)
     finally:
         db.session.close()
 
@@ -124,15 +116,14 @@ def update_drink(drink_id):
         drink = Drink.query.get(drink_id)
 
         if not drink:
-            raise AuthError({
-                'error': 'not_found',
-                'code': 'Drink with that id not found',
-            }, 404)
+            abort(404)
 
         body = request.get_json()
+
         title = body['title']
         if title:
             drink.title = title
+
         raw_recipe = body['recipe']
         if raw_recipe:
             recipe = json.dumps(raw_recipe)
@@ -145,9 +136,10 @@ def update_drink(drink_id):
             'drinks': drink.long()
         }), 200
     except Exception as e:
-        print('Error - [PATCH] /drinks/<id>')
+        print('Error - [PATCH] /drinks/<id>', e)
+        description = getattr(e, 'message', 'Internal server error')
         code = getattr(e, 'code', 500)
-        abort(code)
+        abort(code, description=description)
     finally:
         db.session.close()
 
@@ -170,21 +162,21 @@ def delete_drink(drink_id):
     try:
         print('Request - [PATCH] /drinks/<id>')
         drink = Drink.query.get(drink_id)
+
         if not drink:
-            raise AuthError({
-                'error': 'not_found',
-                'code': 'Drink with that id not found',
-            }, 404)
+            abort(404)
 
         drink.delete()
+
         return jsonify({
             'success': True,
             'delete': drink_id
         }), 200
     except Exception as e:
-        print('Error - [PATCH] /drinks/<id>')
+        print('Error - [PATCH] /drinks/<id>', e)
+        description = getattr(e, 'message', 'Internal server error')
         code = getattr(e, 'code', 500)
-        abort(code)
+        abort(code, description=description)
     finally:
         db.session.close()
 
@@ -213,5 +205,14 @@ def handle_auth_error(error: AuthError):
     return jsonify({
         'success': False,
         'error': error.status_code,
-        'message': error.error.message,
+        'message': error.error['message'],
     }), error.status_code
+
+
+@app.errorhandler(400)
+def handle_bad_request(error: Exception):
+    return jsonify({
+        'success': False,
+        'error': 400,
+        'message': error.message
+    }), 400

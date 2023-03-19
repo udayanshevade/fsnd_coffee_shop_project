@@ -17,7 +17,7 @@ A standardized way to communicate auth failure modes
 
 
 class AuthError(Exception):
-    def __init__(self, error, status_code):
+    def __init__(self, error: dict['code': int, 'description': str], status_code: int):
         self.error = error
         self.status_code = status_code
 
@@ -31,15 +31,22 @@ class AuthError(Exception):
 
 
 def get_token_auth_header():
-    auth = request.headers.get('Authorization', None)
+    auth: str | None = request.headers.get('Authorization', None)
     if not auth:
         raise AuthError(
             {'code': 'auth_missing', 'description': 'Authorization header is required'}, 400)
-    bearer = auth.split(' ')
-    token = bearer[1]
+    bearer_token = auth.split(' ')
+    if len(bearer_token) != 2:
+        raise AuthError({'code': 'invalid_header',
+                        'description': 'Bearer token is invalid'}, 400)
+    bearer = bearer_token[0]
+    if bearer.lower() != 'bearer':
+        raise AuthError({'code': 'invalid_header',
+                        'description': 'Authorization header must begin with "Bearer "'}, 400)
+    token = bearer_token[1]
     if not token:
         raise AuthError({'code': 'invalid_header',
-                        'description': 'Bearer token is required'}, 400)
+                        'description': 'An auth token is required'}, 400)
     return token
 
 
@@ -51,7 +58,7 @@ def get_token_auth_header():
 '''
 
 
-def check_permissions(permission, payload):
+def check_permissions(permission: str, payload: str):
     if 'permissions' not in payload:
         raise AuthError(
             {'code': 'malformed_query', 'description': 'Malformed token: permissions not specified'}, 400)
@@ -61,15 +68,13 @@ def check_permissions(permission, payload):
     return True
 
 
-'''
+'''Return the decoded jwt payload.
+
     @INPUTS
         token: a json web token (string)
 
-    it should be an Auth0 token with key id (kid)
-    it should verify the token using Auth0 /.well-known/jwks.json
-    it should decode the payload from the token
-    it should validate the claims
-    return the decoded payload
+    It verifies an Auth0 token with a key id (kid).
+    It decodes the payload from the token and validates the claims.
 
     !!NOTE urlopen has a common certificate error described here: https://stackoverflow.com/questions/50236117/scraping-ssl-certificate-verify-failed-error-for-http-en-wikipedia-org
 '''
@@ -127,15 +132,12 @@ def verify_decode_jwt(token):
         }, 400)
 
 
-'''
-@TODO implement @requires_auth(permission) decorator method
+'''Return the decorator which passes the decoded payload to the decorated method.
+
     @INPUTS
         permission: string permission (i.e. 'post:drink')
 
-    it should use the get_token_auth_header method to get the token
-    it should use the verify_decode_jwt method to decode the jwt
-    it should use the check_permissions method validate claims and check the requested permission
-    return the decorator which passes the decoded payload to the decorated method
+    This method decodes the JWT, validates the claims and verifies the requested permission.
 '''
 
 
