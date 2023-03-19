@@ -4,7 +4,7 @@ from sqlalchemy import exc
 import json
 from flask_cors import CORS
 
-from .database.models import db_drop_and_create_all, setup_db, Drink
+from .database.models import db, db_drop_and_create_all, setup_db, Drink
 from .auth.auth import AuthError, requires_auth
 
 app = Flask(__name__)
@@ -12,32 +12,63 @@ setup_db(app)
 CORS(app)
 
 '''
-@TODO uncomment the following line to initialize the datbase
 !! NOTE THIS WILL DROP ALL RECORDS AND START YOUR DB FROM SCRATCH
 !! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
 !! Running this funciton will add one
 '''
-# db_drop_and_create_all()
+db_drop_and_create_all(app)
 
 # ROUTES
-'''
-@TODO implement endpoint
-    GET /drinks
-        it should be a public endpoint
-        it should contain only the drink.short() data representation
-    returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
-        or appropriate status code indicating reason for failure
-'''
+
+
+@app.route('/drinks', methods=['GET'])
+def get_drinks():
+    """Handles GET requests for all available drinks."""
+    try:
+        print('Request - [GET] /drinks')
+        all_drinks = Drink.query.all()
+        print(all_drinks)
+        drinks = [drink.short() for drink in all_drinks]
+        return jsonify({
+            'success': True,
+            'drinks': drinks
+        })
+    except Exception as e:
+        print('Error - [GET] /drinks')
+        code = getattr(e, 'code', 500)
+        abort(code)
+    finally:
+        db.session.close()
 
 
 '''
-@TODO implement endpoint
     GET /drinks-detail
         it should require the 'get:drinks-detail' permission
         it should contain the drink.long() data representation
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
+
+
+@requires_auth('get:drinks-detail')
+@app.route('/drinks-detail', methods=['GET'])
+def get_detailed_drinks():
+    """Handles GET requests for all available drinks."""
+    try:
+        print('Request - [GET] /drinks')
+        all_drinks = Drink.query.all()
+        print(all_drinks)
+        drinks = [drink.short() for drink in all_drinks]
+        return jsonify({
+            'success': True,
+            'drinks': drinks
+        })
+    except Exception as e:
+        print('Error - [GET] /drinks')
+        code = getattr(e, 'code', 500)
+        abort(code)
+    finally:
+        db.session.close()
 
 
 '''
