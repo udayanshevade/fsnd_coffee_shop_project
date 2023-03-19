@@ -14,7 +14,7 @@ CORS(app)
 '''
 !! NOTE THIS WILL DROP ALL RECORDS AND START YOUR DB FROM SCRATCH
 !! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
-!! Running this funciton will add one
+!! Running this function will add one
 '''
 db_drop_and_create_all(app)
 
@@ -27,7 +27,6 @@ def get_drinks():
     try:
         print('Request - [GET] /drinks')
         all_drinks = Drink.query.all()
-        print(all_drinks)
         drinks = [drink.short() for drink in all_drinks]
         return jsonify({
             'success': True,
@@ -53,12 +52,11 @@ def get_drinks():
 @requires_auth('get:drinks-detail')
 @app.route('/drinks-detail', methods=['GET'])
 def get_detailed_drinks():
-    """Handles GET requests for all available drinks."""
+    """Handles GET requests for all available drinks in detailed form."""
     try:
         print('Request - [GET] /drinks')
         all_drinks = Drink.query.all()
-        print(all_drinks)
-        drinks = [drink.short() for drink in all_drinks]
+        drinks = [drink.long() for drink in all_drinks]
         return jsonify({
             'success': True,
             'drinks': drinks
@@ -89,12 +87,13 @@ def create_drink():
         print('Request - [POST] /drinks')
         body = request.get_json()
         title = body['title']
-        recipe = body['recipe']
+        raw_recipe = body['recipe']
+        recipe = json.dumps(raw_recipe)
         drink = Drink(title=title, recipe=recipe)
         drink.insert()
         return jsonify({
             'success': True,
-            'drinks': drink
+            'drinks': drink.long()
         }), 200
     except Exception as e:
         print('Error - [POST] /drinks')
@@ -127,15 +126,16 @@ def update_drink(drink_id):
         title = body['title']
         if title:
             drink.title = title
-        recipe = body['recipe']
-        if recipe:
+        raw_recipe = body['recipe']
+        if raw_recipe:
+            recipe = json.dumps(raw_recipe)
             drink.recipe = recipe
 
         drink.update()
 
         return jsonify({
             'success': True,
-            'drinks': drink
+            'drinks': drink.long()
         }), 200
     except Exception as e:
         print('Error - [PATCH] /drinks/<id>')
