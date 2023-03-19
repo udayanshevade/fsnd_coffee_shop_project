@@ -118,6 +118,35 @@ def create_drink():
 '''
 
 
+@requires_auth('patch:drinks')
+@app.route('/drinks/<int:drink_id>', methods=['PATCH'])
+def update_drink(drink_id):
+    try:
+        print('Request - [PATCH] /drinks/<id>')
+        drink = Drink.query.get(drink_id)
+
+        body = request.get_json()
+        title = body['title']
+        if title:
+            drink.title = title
+        recipe = body['recipe']
+        if recipe:
+            drink.recipe = recipe
+
+        drink.update()
+
+        return jsonify({
+            'success': True,
+            'drinks': drink
+        })
+    except Exception as e:
+        print('Error - [PATCH] /drinks/<id>')
+        code = getattr(e, 'code', 500)
+        abort(code)
+    finally:
+        db.session.close()
+
+
 '''
 @TODO implement endpoint
     DELETE /drinks/<id>
