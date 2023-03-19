@@ -118,6 +118,7 @@ def create_drink():
 @requires_auth('patch:drinks')
 @app.route('/drinks/<int:drink_id>', methods=['PATCH'])
 def update_drink(drink_id):
+    '''Handles PATCH requests to update existing drink entries in the database'''
     try:
         print('Request - [PATCH] /drinks/<id>')
         drink = Drink.query.get(drink_id)
@@ -165,6 +166,7 @@ def update_drink(drink_id):
 @requires_auth('delete:drinks')
 @app.route('/drinks/<int:drink_id>', methods=['DELETE'])
 def delete_drink(drink_id):
+    '''Handles DELETE requests for drink entries to be removed from the database'''
     try:
         print('Request - [PATCH] /drinks/<id>')
         drink = Drink.query.get(drink_id)
