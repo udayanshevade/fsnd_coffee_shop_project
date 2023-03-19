@@ -122,6 +122,12 @@ def update_drink(drink_id):
         print('Request - [PATCH] /drinks/<id>')
         drink = Drink.query.get(drink_id)
 
+        if not drink:
+            raise AuthError({
+                'error': 'not_found',
+                'code': 'Drink with that id not found',
+            }, 404)
+
         body = request.get_json()
         title = body['title']
         if title:
@@ -162,6 +168,12 @@ def delete_drink(drink_id):
     try:
         print('Request - [PATCH] /drinks/<id>')
         drink = Drink.query.get(drink_id)
+        if not drink:
+            raise AuthError({
+                'error': 'not_found',
+                'code': 'Drink with that id not found',
+            }, 404)
+
         drink.delete()
         return jsonify({
             'success': True,
