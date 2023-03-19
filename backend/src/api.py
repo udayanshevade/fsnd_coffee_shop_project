@@ -32,7 +32,7 @@ def get_drinks():
         return jsonify({
             'success': True,
             'drinks': drinks
-        })
+        }), 200
     except Exception as e:
         print('Error - [GET] /drinks')
         code = getattr(e, 'code', 500)
@@ -62,7 +62,7 @@ def get_detailed_drinks():
         return jsonify({
             'success': True,
             'drinks': drinks
-        })
+        }), 200
     except Exception as e:
         print('Error - [GET] /drinks')
         code = getattr(e, 'code', 500)
@@ -80,6 +80,29 @@ def get_detailed_drinks():
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
         or appropriate status code indicating reason for failure
 '''
+
+
+@requires_auth('post:drinks')
+@app.route('/drinks', methods=['POST'])
+def create_drink():
+    """Handles POST requests for new drink entries in the database"""
+    try:
+        print('Request - [POST] /drinks')
+        body = request.get_json()
+        title = body['title']
+        recipe = body['recipe']
+        drink = Drink(title=title, recipe=recipe)
+        drink.insert()
+        return jsonify({
+            'success': True,
+            'drinks': drink
+        }), 200
+    except Exception as e:
+        print('Error - [POST] /drinks')
+        code = getattr(e, 'code', 500)
+        abort(code)
+    finally:
+        db.session.close()
 
 
 '''
