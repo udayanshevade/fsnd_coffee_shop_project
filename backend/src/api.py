@@ -102,20 +102,17 @@ def update_drink(payload, drink_id):
 
         body = request.get_json()
 
-        title = body['title']
-        if title:
-            drink.title = title
+        if 'title' in body:
+            drink.title = body['title']
 
-        raw_recipe = body['recipe']
-        if raw_recipe:
-            recipe = json.dumps(raw_recipe)
-            drink.recipe = recipe
+        if 'recipe' in body:
+            drink.recipe = json.dumps(body['recipe'])
 
         drink.update()
 
         return jsonify({
             'success': True,
-            'drinks': drink.long()
+            'drinks': [drink.long()]
         }), 200
     except Exception as e:
         print('Error - [PATCH] /drinks/<id>', e)
