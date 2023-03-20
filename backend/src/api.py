@@ -34,9 +34,7 @@ def get_drinks():
         }), 200
     except Exception as e:
         print('Error - [GET] /drinks', e)
-        description = getattr(e, 'message', 'Internal server error')
-        code = getattr(e, 'code', 500)
-        abort(code, description=description)
+        abort(500, 'Internal server error')
     finally:
         db.session.close()
 
@@ -55,9 +53,7 @@ def get_detailed_drinks(payload):
         }), 200
     except Exception as e:
         print('Error - [GET] /drinks-detail', e)
-        description = getattr(e, 'message', 'Internal server error')
-        code = getattr(e, 'code', 500)
-        abort(code, description=description)
+        abort(500, 'Internal server error')
     finally:
         db.session.close()
 
@@ -88,23 +84,9 @@ def create_drink(payload):
         }), 200
     except Exception as e:
         print('Error - [POST] /drinks', e)
-        description = getattr(e, 'message', 'Internal server error')
-        code = getattr(e, 'code', 500)
-        abort(code, description=description)
+        abort(500, 'Internal server error')
     finally:
         db.session.close()
-
-
-'''
-    PATCH /drinks/<id>
-        where <id> is the existing model id
-        it should respond with a 404 error if <id> is not found
-        it should update the corresponding row for <id>
-        it should require the 'patch:drinks' permission
-        it should contain the drink.long() data representation
-    returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink
-        or appropriate status code indicating reason for failure
-'''
 
 
 @app.route('/drinks/<int:drink_id>', methods=['PATCH'])
@@ -137,22 +119,9 @@ def update_drink(payload, drink_id):
         }), 200
     except Exception as e:
         print('Error - [PATCH] /drinks/<id>', e)
-        description = getattr(e, 'message', 'Internal server error')
-        code = getattr(e, 'code', 500)
-        abort(code, description=description)
+        abort(500, 'Internal server error')
     finally:
         db.session.close()
-
-
-'''
-    DELETE /drinks/<id>
-        where <id> is the existing model id
-        it should respond with a 404 error if <id> is not found
-        it should delete the corresponding row for <id>
-        it should require the 'delete:drinks' permission
-    returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
-        or appropriate status code indicating reason for failure
-'''
 
 
 @app.route('/drinks/<int:drink_id>', methods=['DELETE'])
@@ -174,9 +143,7 @@ def delete_drink(payload, drink_id):
         }), 200
     except Exception as e:
         print('Error - [PATCH] /drinks/<id>', e)
-        description = getattr(e, 'message', 'Internal server error')
-        code = getattr(e, 'code', 500)
-        abort(code, description=description)
+        abort(500, 'Internal server error')
     finally:
         db.session.close()
 
