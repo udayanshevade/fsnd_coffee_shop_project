@@ -34,7 +34,7 @@ def get_token_auth_header():
     auth: str | None = request.headers.get('Authorization', None)
     if not auth:
         raise AuthError(
-            {'code': 'auth_missing', 'description': 'Authorization header is required'}, 400)
+            {'code': 'auth_missing', 'description': 'Authorization header is required'}, 401)
     bearer_token = auth.split(' ')
     if len(bearer_token) != 2:
         raise AuthError({'code': 'invalid_header',
@@ -104,7 +104,7 @@ def verify_decode_jwt(token):
         raise AuthError({
             'code': 'invalid_header',
             'description': 'Unable to parse authentication token.'
-        }, 400)
+        }, 401)
 
     try:
         payload = jwt.decode(

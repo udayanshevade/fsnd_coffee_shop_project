@@ -41,12 +41,12 @@ def get_drinks():
         db.session.close()
 
 
-@requires_auth('get:drinks-detail')
 @app.route('/drinks-detail', methods=['GET'])
-def get_detailed_drinks():
+@requires_auth('get:drinks-detail')
+def get_detailed_drinks(payload):
     """Handles GET requests for all available drinks in their detailed format."""
     try:
-        print('Request - [GET] /drinks')
+        print('Request - [GET] /drinks-detail')
         all_drinks = Drink.query.all()
         drinks = [drink.long() for drink in all_drinks]
         return jsonify({
@@ -54,7 +54,7 @@ def get_detailed_drinks():
             'drinks': drinks
         }), 200
     except Exception as e:
-        print('Error - [GET] /drinks', e)
+        print('Error - [GET] /drinks-detail', e)
         description = getattr(e, 'message', 'Internal server error')
         code = getattr(e, 'code', 500)
         abort(code, description=description)
@@ -62,9 +62,9 @@ def get_detailed_drinks():
         db.session.close()
 
 
-@requires_auth('post:drinks')
 @app.route('/drinks', methods=['POST'])
-def create_drink():
+@requires_auth('post:drinks')
+def create_drink(payload):
     """Handles POST requests for new drink entries in the database"""
     try:
         print('Request - [POST] /drinks')
@@ -107,9 +107,9 @@ def create_drink():
 '''
 
 
-@requires_auth('patch:drinks')
 @app.route('/drinks/<int:drink_id>', methods=['PATCH'])
-def update_drink(drink_id):
+@requires_auth('patch:drinks')
+def update_drink(payload, drink_id):
     '''Handles PATCH requests to update existing drink entries in the database'''
     try:
         print('Request - [PATCH] /drinks/<id>')
@@ -155,9 +155,9 @@ def update_drink(drink_id):
 '''
 
 
-@requires_auth('delete:drinks')
 @app.route('/drinks/<int:drink_id>', methods=['DELETE'])
-def delete_drink(drink_id):
+@requires_auth('delete:drinks')
+def delete_drink(payload, drink_id):
     '''Handles DELETE requests for drink entries to be removed from the database'''
     try:
         print('Request - [PATCH] /drinks/<id>')
@@ -183,7 +183,7 @@ def delete_drink(drink_id):
 
 # Error Handling
 @app.errorhandler(422)
-def unprocessable(error):
+def unprocessable():
     return jsonify({
         "success": False,
         "error": 422,
@@ -192,7 +192,7 @@ def unprocessable(error):
 
 
 @app.errorhandler(404)
-def unreachable(error):
+def unreachable():
     return jsonify({
         'success': False,
         'error': 404,
@@ -200,19 +200,29 @@ def unreachable(error):
     }), 404
 
 
-@app.errorhandler(401)
+@app.errorhandler(AuthError)
 def handle_auth_error(error: AuthError):
+    print(error)
     return jsonify({
         'success': False,
         'error': error.status_code,
-        'message': error.error['message'],
-    }), error.status_code
+        'message': error.error['description']
+    }), error.status_code,
+
+
+@app.errorhandler(401)
+def handle_auth_error():
+    return jsonify({
+        'success': False,
+        'error': 'unauthorized',
+        'message': 'Request is unauthorized',
+    }), 401
 
 
 @app.errorhandler(400)
-def handle_bad_request(error: Exception):
+def handle_bad_request():
     return jsonify({
         'success': False,
         'error': 400,
-        'message': error.message
+        'message': 'Bad request'
     }), 400
