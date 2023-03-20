@@ -2,34 +2,46 @@
 
 ## Full Stack Nano - IAM Final Project
 
-Udacity has decided to open a new digitally enabled cafe for students to order drinks, socialize, and study hard. But they need help setting up their menu experience.
+The application:
 
-You have been called on to demonstrate your newly learned skills to create a full stack drink menu application. The application must:
+1. Allows public users to view drink names and graphics.
+2. Allows the shop baristas to see the recipe information.
+3. Allows the shop managers to create new drinks and edit existing drinks.
 
-1. Display graphics representing the ratios of ingredients in each drink.
-2. Allow public users to view drink names and graphics.
-3. Allow the shop baristas to see the recipe information.
-4. Allow the shop managers to create new drinks and edit existing drinks.
+## Instructions to run the app:
 
-## Tasks
+1. Clone or download the repo
 
-There are `@TODO` comments throughout the project. We recommend tackling the sections in order. Start by reading the READMEs in:
+To run the backend dev server:
 
-1. [`./backend/`](./backend/README.md)
-2. [`./frontend/`](./frontend/README.md)
+1. `cd` into the `./backend` directory
+2. Spin up a virtual env: `python3 -m venv env`
+3. Activate the virtual env: `source env/bin/activate`
+4. Install the required imports: `pip3 install -r requirements.txt`
+5. `cd` into the `./src` folder in the backend directory
+6. Export the FLASK_APP env var: `export FLASK_APP=api.py;`
+7. Run the server: `flask run --reload`
+
+To run the frontend dev server:
+
+1. `cd` to the `./frontend` directory
+2. Verify your `Node` version is 16: `node -v` (use `nvm` to downgrade if needed: `nvm use 16`)
+3. Install the required packages: `npm i`
+4. Start the frontend dev server: `ionic serve`
+
+## Testing:
+
+Open the provided collection from `./backend/udacity-fsnd-udaspicelatte.postman_collection.json` in Postman.
+Run the tests for the 'public', 'barista' and 'manager' folders.
+
+## More details
+
+There are more detailed README files in the project folders:
+
+1. [`./backend/`](./backend/README.md) - The `./backend` directory contains a Flask server with modules for SQLAlchemy data, authentication/authorization, and endpoints.
+2. [`./frontend/`](./frontend/README.md) - The `./frontend` directory contains an Ionic frontend to consume the data from the Flask server.
 
 ## About the Stack
 
-We started the full stack application for you. It is designed with some key functional areas:
-
-### Backend
-
-The `./backend` directory contains a partially completed Flask server with a pre-written SQLAlchemy module to simplify your data needs. You will need to complete the required endpoints, configure, and integrate Auth0 for authentication.
-
-[View the README.md within ./backend for more details.](./backend/README.md)
-
-### Frontend
-
-The `./frontend` directory contains a complete Ionic frontend to consume the data from the Flask server. You will only need to update the environment variables found within (./frontend/src/environment/environment.ts) to reflect the Auth0 configuration details set up for the backend app.
-
-[View the README.md within ./frontend for more details.](./frontend/README.md)
+- Flask, SQLAlchemy, Auth0 for identity management
+- Ionic, Node 16, TS
